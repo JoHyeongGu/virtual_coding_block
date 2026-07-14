@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'blocks_view.dart';
 import 'serial_dongle.dart';
+import 'tutorial_virtual_port.dart';
 import 'log_terminal.dart';
 
 void main() {
@@ -14,9 +15,9 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(
-        splashColor: Colors.teal.withOpacity(0.3),
-        highlightColor: Colors.grey.withOpacity(0.2),
-        hoverColor: Colors.blueGrey.withOpacity(0.3),
+        splashColor: Colors.teal.withValues(alpha: 0.3),
+        highlightColor: Colors.grey.withValues(alpha: 0.2),
+        hoverColor: Colors.blueGrey.withValues(alpha: 0.3),
       ),
       home: const Scaffold(body: MainFrame()),
     );
@@ -107,12 +108,44 @@ class _MainFrameState extends State<MainFrame> {
             onDataReceived: _handleDataReceived,
             onConnectionStatusChanged: _handleConnectionStatus,
           ),
+
+          Center(
+            child: Padding(
+              padding: EdgeInsets.only(
+                top: MediaQuery.of(context).size.height * 0.27,
+                right: MediaQuery.of(context).size.width * 0.11,
+              ),
+              child: MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: GestureDetector(
+                  onTap: () {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return const TutorialVirtualPort();
+                      },
+                    );
+                  },
+                  child: const Text(
+                    '연결할 수 있는 시리얼 포트는 어떻게 생성하나요?',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 13,
+                      fontStyle: FontStyle.italic,
+                      decoration: TextDecoration.underline,
+                      decorationColor: Colors.black,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
           if (_isTerminalOpen)
             Positioned.fill(
               child: GestureDetector(
                 onTap: _closeTerminal,
                 behavior: HitTestBehavior.opaque,
-                child: Container(color: Colors.black.withOpacity(0.4)),
+                child: Container(color: Colors.black.withValues(alpha: 0.4)),
               ),
             ),
           AnimatedPositioned(
