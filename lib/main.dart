@@ -108,38 +108,38 @@ class _MainFrameState extends State<MainFrame> {
             onDataReceived: _handleDataReceived,
             onConnectionStatusChanged: _handleConnectionStatus,
           ),
-
-          Center(
-            child: Padding(
-              padding: EdgeInsets.only(
-                top: MediaQuery.of(context).size.height * 0.27,
-                right: MediaQuery.of(context).size.width * 0.11,
-              ),
-              child: MouseRegion(
-                cursor: SystemMouseCursors.click,
-                child: GestureDetector(
-                  onTap: () {
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return const TutorialVirtualPort();
-                      },
-                    );
-                  },
-                  child: const Text(
-                    '연결할 수 있는 시리얼 포트는 어떻게 생성하나요?',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 13,
-                      fontStyle: FontStyle.italic,
-                      decoration: TextDecoration.underline,
-                      decorationColor: Colors.black,
+          if (!_isConnected)
+            Center(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  top: MediaQuery.of(context).size.height * 0.27,
+                  right: MediaQuery.of(context).size.width * 0.11,
+                ),
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: GestureDetector(
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return const TutorialVirtualPort();
+                        },
+                      );
+                    },
+                    child: const Text(
+                      '연결할 수 있는 시리얼 포트는 어떻게 생성하나요?',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 13,
+                        fontStyle: FontStyle.italic,
+                        decoration: TextDecoration.underline,
+                        decorationColor: Colors.black,
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
           if (_isTerminalOpen)
             Positioned.fill(
               child: GestureDetector(
