@@ -111,7 +111,7 @@ class DialBlockWidgetState extends State<DialBlockWidget> {
             focusNode: _focusNode,
             keyboardType: TextInputType.number,
             style: const TextStyle(
-              color: Colors.grey,
+              color: Colors.red,
               fontWeight: FontWeight.bold,
               fontSize: 16,
             ),

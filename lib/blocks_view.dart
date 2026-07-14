@@ -1704,7 +1704,7 @@ class BlocksViewState extends State<BlocksView> {
                               const Text(
                                 '01',
                                 style: TextStyle(
-                                  color: Colors.grey,
+                                  color: Colors.red,
                                   fontWeight: FontWeight.bold,
                                   fontSize: 16,
                                 ),
@@ -1725,15 +1725,13 @@ class BlocksViewState extends State<BlocksView> {
                               ),
                             ),
                           )
-                        : Flexible(
-                            child: Text(
-                              block.name,
-                              maxLines: 1,
-                              style: TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 9,
-                              ),
+                        : Text(
+                            block.name,
+                            maxLines: 1,
+                            style: TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 9,
                             ),
                           ))
                   : Padding(
