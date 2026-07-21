@@ -21,6 +21,14 @@
 
   <title>코딩 블록 시뮬레이터</title>
   <link rel="manifest" href="manifest.json">
+  <script>
+    const observer = new MutationObserver(() => {
+      if (document.title !== "코딩 블록 시뮬레이터") {
+        document.title = "코딩 블록 시뮬레이터";
+      }
+    });
+    observer.observe(document.querySelector('title'), { subtree: true, characterData: true, childList: true });
+  </script>
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>

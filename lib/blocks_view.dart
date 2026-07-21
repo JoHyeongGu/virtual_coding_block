@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'packet.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'block_container.dart';
 import 'dial_block_widget.dart';
-import 'packet.dart';
+import 'preset_widget.dart';
 import 'dart:math';
 
 class Preset {
@@ -87,402 +89,22 @@ class BlocksView extends StatefulWidget {
 }
 
 class BlocksViewState extends State<BlocksView> {
+  final GlobalKey<PresetWidgetState> _presetKey = GlobalKey();
   static const Color controlColor = Color.fromARGB(255, 255, 230, 79);
   static const double blockSpacing = 55.0;
+
   int _seqNum = 1;
   List<PlacedBlock> _savedFunctionBlocks = [];
   PlacedBlock? _editingBlock;
+  bool _isDraggingStartGroup = false;
 
   int _frontSensor = 0;
   int _bottomSensor = 0;
   int _lightSensor = 0;
 
-  final List<PresetGroup> _presetGroups = [
-    PresetGroup(
-      groupName: "[VRWARE StoryCoding] 앨리스",
-      presets: [
-        Preset(
-          name: "1스테이지, 스텝 1",
-          blocks: [
-            {'id': 'START'},
-            {'id': 'MOVE', 'param': "NUM_2"},
-            {'id': 'MOVE', 'param': "DIR_RIGHT"},
-            {'id': 'MOVE', 'param': "NUM_2"},
-            {'id': 'PLAY'},
-          ],
-        ),
-        Preset(
-          name: "1스테이지, 스텝 2",
-          blocks: [
-            {'id': 'START'},
-            {'id': 'REPEAT', "param": "NUM_3"},
-            {'id': 'MOVE'},
-            {'id': 'MOVE', "param": "DIR_RIGHT"},
-            {'id': 'MOVE'},
-            {'id': 'MOVE', "param": "DIR_LEFT"},
-            {'id': 'CLOSE'},
-            {'id': 'PLAY'},
-          ],
-        ),
-        Preset(
-          name: "1스테이지, 스텝 3",
-          blocks: [
-            {'id': 'START'},
-            {'id': 'MOVE', 'param': 'NUM_2'},
-            {'id': 'MOVE', 'param': 'DIR_LEFT'},
-            {'id': 'MOVE', 'param': 'NUN_2'},
-            {'id': 'PLAY'},
-          ],
-        ),
-        Preset(
-          name: "2스테이지, 스텝 1",
-          blocks: [
-            {'id': 'START'},
-            {'id': 'MOVE', 'param': 'NUM_6'},
-            {'id': 'PLAY'},
-          ],
-        ),
-        Preset(
-          name: "2스테이지, 스텝 2",
-          blocks: [
-            {'id': 'START'},
-            {'id': 'REPEAT', 'param': 'NUM_3'},
-            {'id': 'MOVE', 'param': 'NUM_3'},
-            {'id': 'MOVE', 'param': 'DIR_RIGHT'},
-            {'id': 'CLOSE'},
-            {'id': 'MOVE'},
-            {'id': 'PLAY'},
-          ],
-        ),
-        Preset(
-          name: "3스테이지, 스텝 1",
-          blocks: [
-            {'id': 'START'},
-            {'id': 'REPEAT', 'param': 'NUM_2'},
-            {'id': 'MOVE', 'param': 'NUM_3'},
-            {'id': 'MOVE', 'param': 'DIR_LEFT'},
-            {'id': 'CLOSE'},
-            {'id': 'MOVE', 'param': 'NUM_3'},
-            {'id': 'PLAY'},
-          ],
-        ),
-        Preset(
-          name: "4스테이지, 스텝 1",
-          blocks: [
-            {'id': 'START'},
-            {'id': 'MOVE', 'param': 'NUM_6'},
-            {'id': 'MOVE', 'param': 'DIR_RIGHT'},
-            {'id': 'MOVE'},
-            {'id': 'PLAY'},
-          ],
-        ),
-        Preset(
-          name: "4스테이지, 스텝 2",
-          blocks: [
-            {'id': 'START'},
-            {'id': 'FUNCTION'},
-            {'id': 'MOVE', 'param': 'DIR_RIGHT'},
-            {'id': 'MOVE'},
-            {'id': 'MOVE', 'param': 'DIR_LEFT'},
-            {'id': 'PLAY'},
-          ],
-          functionBlocks: [
-            {'id': 'REPEAT', 'param': 'NUM_3'},
-            {'id': 'MOVE'},
-            {'id': 'IF', 'param': 'SENSOR_FLOOR'},
-            {'id': 'LED_ON', 'param': 'NUM_2'},
-            {'id': 'CLOSE'},
-            {'id': 'CLOSE'},
-          ],
-        ),
-        Preset(
-          name: "5스테이지, 스텝 1",
-          blocks: [
-            {'id': 'START'},
-            {'id': 'REPEAT', 'param': 'NUM_2'},
-            {'id': 'MOVE', 'param': 'NUM_2'},
-            {'id': 'MOVE', 'param': 'DIR_LEFT'},
-            {'id': 'MOVE'},
-            {'id': 'MOVE', 'param': 'DIR_RIGHT'},
-            {'id': 'CLOSE'},
-            {'id': 'PLAY'},
-          ],
-        ),
-        Preset(
-          name: "5스테이지, 스텝 2",
-          blocks: [
-            {'id': 'START'},
-            {'id': 'MOVE', 'param': 'NUM_3'},
-            {'id': 'REPEAT', 'param': 'NUM_2'},
-            {'id': 'MOVE', 'param': 'DIR_RIGHT'},
-            {'id': 'MOVE', 'param': 'NUM_2'},
-            {'id': 'CLOSE'},
-            {'id': 'PLAY'},
-          ],
-        ),
-        Preset(
-          name: "5스테이지, 스텝 3",
-          blocks: [
-            {'id': 'START'},
-            {'id': 'REPEAT', 'param': 'NUM_3'},
-            {'id': 'MOVE'},
-            {'id': 'MOVE', 'param': 'DIR_RIGHT'},
-            {'id': 'MOVE'},
-            {'id': 'MOVE', 'param': 'DIR_LEFT'},
-            {'id': 'CLOSE'},
-            {'id': 'PLAY'},
-          ],
-        ),
-        Preset(
-          name: "5스테이지, 스텝 4",
-          blocks: [
-            {'id': 'START'},
-            {'id': 'REPEAT', 'param': 'NUM_4'},
-            {'id': 'MOVE'},
-            {'id': 'MOVE', 'param': 'DIR_RIGHT'},
-            {'id': 'MOVE'},
-            {'id': 'MOVE', 'param': 'DIR_LEFT'},
-            {'id': 'CLOSE'},
-            {'id': 'PLAY'},
-          ],
-        ),
-      ],
-    ),
-    PresetGroup(
-      groupName: "[VRWARE StroyCoding] 인어공주",
-      presets: [
-        Preset(
-          name: "1스테이지, 스텝 1",
-          blocks: [
-            {'id': 'START'},
-            {'id': 'MOVE', 'param': 'NUM_2'},
-            {'id': 'MOVE', 'param': 'DIR_LEFT'},
-            {'id': 'MOVE', 'param': 'NUM_3'},
-            {'id': 'PLAY'},
-          ],
-        ),
-        Preset(
-          name: "1스테이지, 스텝 2",
-          blocks: [
-            {'id': 'START'},
-            {'id': 'REPEAT', 'param': 'NUM_3'},
-            {'id': 'MOVE'},
-            {'id': 'MOVE', 'param': 'DIR_RIGHT'},
-            {'id': 'MOVE'},
-            {'id': 'MOVE', 'param': 'DIR_LEFT'},
-            {'id': 'CLOSE'},
-            {'id': 'PLAY'},
-          ],
-        ),
-        Preset(
-          name: "1스테이지, 스텝 3",
-          blocks: [
-            {'id': 'START'},
-            {'id': 'MOVE', 'param': 'NUM_3'},
-            {'id': 'MOVE', 'param': 'DIR_LEFT'},
-            {'id': 'MOVE', 'param': 'NUM_3'},
-            {'id': 'PLAY'},
-          ],
-        ),
-        Preset(
-          name: "2스테이지, 스텝 1",
-          blocks: [
-            {'id': 'START'},
-            {'id': 'REPEAT', 'param': 'NUM_4'},
-            {'id': 'MOVE'},
-            {'id': 'MOVE', 'param': 'DIR_LEFT'},
-            {'id': 'MOVE'},
-            {'id': 'MOVE', 'param': 'DIR_RIGHT'},
-            {'id': 'CLOSE'},
-            {'id': 'PLAY'},
-          ],
-        ),
-        Preset(
-          name: "2스테이지, 스텝 2",
-          blocks: [
-            {'id': 'START'},
-            {'id': 'MOVE', 'param': 'NUM_4'},
-            {'id': 'REPEAT', 'param': 'NUM_2'},
-            {'id': 'MOVE', 'param': 'DIR_LEFT'},
-            {'id': 'MOVE', 'param': 'NUM_4'},
-            {'id': 'CLOSE'},
-            {'id': 'PLAY'},
-          ],
-        ),
-        Preset(
-          name: "2스테이지, 스텝 3",
-          blocks: [
-            {'id': 'START'},
-            {'id': 'REPEAT', 'param': 'NUM_3'},
-            {'id': 'MOVE', 'param': 'NUM_5'},
-            {'id': 'MOVE', 'param': 'DIR_RIGHT'},
-            {'id': 'CLOSE'},
-            {'id': 'PLAY'},
-          ],
-        ),
-        Preset(
-          name: "3스테이지, 스텝 1",
-          blocks: [
-            {'id': 'START'},
-            {'id': 'MOVE', 'param': 'NUM_4'},
-            {'id': 'MOVE', 'param': 'DIR_RIGHT'},
-            {'id': 'MOVE', 'param': 'NUM_2'},
-            {'id': 'PLAY'},
-          ],
-        ),
-        Preset(
-          name: "3스테이지, 스텝 2",
-          blocks: [
-            {'id': 'START'},
-            {'id': 'MOVE'},
-            {'id': 'REPEAT'},
-            {'id': 'IF', 'param': 'SENSOR_FRONT'},
-            {'id': 'SOUND', 'param': 'NUM_5'},
-            {'id': 'ELSE'},
-            {'id': 'MOVE', 'param': 'NUM_2'},
-            {'id': 'CLOSE'},
-            {'id': 'CLOSE'},
-            {'id': 'PLAY'},
-          ],
-        ),
-      ],
-    ),
-  ];
-
-  void _applyPreset(Preset preset) {
-    List<PlacedBlock> existingBlocks = List.from(_workspaceBlocks);
-    List<PlacedBlock> newWorkspace = [];
-    Map<String, int> tempCounts = Map.from(_inventoryCounts);
-
-    bool canApply = true;
-
-    for (var p in preset.blocks) {
-      PlacedBlock? found = existingBlocks.firstWhere(
-        (b) => b.type.id == p['id'],
-        orElse: () => PlacedBlock(
-          BlockType(id: 'dummy', name: '', color: Colors.transparent),
-          Offset.zero,
-        ),
-      );
-
-      PlacedBlock currentActionBlock;
-
-      if (found.type.id != 'dummy') {
-        existingBlocks.remove(found);
-        found.attachedNumberBlock = null;
-        found.parentActionBlock = null;
-        currentActionBlock = found;
-      } else if ((tempCounts[p['id']] ?? 0) > 0) {
-        tempCounts[p['id']] = tempCounts[p['id']]! - 1;
-        final type = _actionTypes.firstWhere((t) => t.id == p['id']);
-        currentActionBlock = PlacedBlock(type, Offset.zero);
-      } else {
-        canApply = false;
-        break;
-      }
-
-      newWorkspace.add(currentActionBlock);
-
-      if (p.containsKey('param')) {
-        String paramId = p['param'];
-        PlacedBlock? paramFound = existingBlocks.firstWhere(
-          (b) => b.type.id == paramId,
-          orElse: () => PlacedBlock(
-            BlockType(id: 'dummy', name: '', color: Colors.transparent),
-            Offset.zero,
-          ),
-        );
-
-        PlacedBlock currentParamBlock;
-
-        if (paramFound.type.id != 'dummy') {
-          existingBlocks.remove(paramFound);
-          paramFound.attachedNumberBlock = null;
-          paramFound.parentActionBlock = null;
-          currentParamBlock = paramFound;
-        } else if ((tempCounts[paramId] ?? 0) > 0) {
-          tempCounts[paramId] = tempCounts[paramId]! - 1;
-          final paramType = _parameterTypes.firstWhere((t) => t.id == paramId);
-          currentParamBlock = PlacedBlock(paramType, Offset.zero);
-        } else {
-          canApply = false;
-          break;
-        }
-
-        currentActionBlock.attachedNumberBlock = currentParamBlock;
-        currentParamBlock.parentActionBlock = currentActionBlock;
-        newWorkspace.add(currentParamBlock);
-      }
-    }
-
-    if (canApply) {
-      setState(() {
-        _inventoryCounts = tempCounts;
-        _workspaceBlocks.clear();
-
-        if (preset.functionBlocks != null) {
-          _savedFunctionBlocks = [];
-          for (var fb in preset.functionBlocks!) {
-            final actionType = _actionTypes.firstWhere((t) => t.id == fb['id']);
-            final actionBlock = PlacedBlock(actionType, Offset.zero);
-
-            if (fb.containsKey('param')) {
-              final paramId = fb['param'];
-              final paramType = _parameterTypes.firstWhere(
-                (t) => t.id == paramId,
-              );
-              final paramBlock = PlacedBlock(paramType, Offset.zero);
-              actionBlock.attachedNumberBlock = paramBlock;
-              paramBlock.parentActionBlock = actionBlock;
-            }
-            _savedFunctionBlocks.add(actionBlock);
-          }
-        } else {
-          _savedFunctionBlocks = [];
-        }
-
-        double currentX = 300.0;
-        double currentY = 200.0;
-        BlockType? prevType;
-
-        for (var b in newWorkspace) {
-          if (b.type.isNumberBlock ||
-              b.type.isSensorBlock ||
-              b.type.isDirectionBlock) {
-            b.position = Offset(
-              b.parentActionBlock!.position.dx + 120,
-              b.parentActionBlock!.position.dy + 5,
-            );
-            _workspaceBlocks.add(b);
-            continue;
-          }
-
-          if (prevType != null) {
-            double spacing =
-                ((prevType.id == 'IF' || prevType.id == 'REPEAT') &&
-                    b.type.id == 'CLOSE')
-                ? (blockSpacing + 30.0)
-                : blockSpacing;
-            currentY += spacing;
-            currentX += _getChildXOffset(prevType, b.type);
-          }
-          b.position = Offset(currentX, currentY);
-          prevType = b.type;
-          _workspaceBlocks.add(b);
-        }
-
-        for (var b in existingBlocks) {
-          b.attachedNumberBlock = null;
-          b.parentActionBlock = null;
-        }
-        _workspaceBlocks.addAll(existingBlocks);
-      });
-    } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('블록 총 개수가 부족합니다.')));
-    }
-  }
+  Offset _cameraOffset = Offset.zero;
+  Offset? _panStartFocalPoint;
+  Offset? _panStartCameraOffset;
 
   final List<BlockType> _actionTypes = [
     const BlockType(
@@ -657,6 +279,36 @@ class BlocksViewState extends State<BlocksView> {
       isDialBlock: true,
     ),
   ];
+
+  final Map<String, int> _maxInventory = {
+    'START': 1,
+    'MOVE': 4,
+    'FUNCTION': 1,
+    'WAIT': 2,
+    'LED_ON': 2,
+    'SOUND': 1,
+    'PLAY': 1,
+    'REPEAT': 1,
+    'IF': 1,
+    'ELSE': 1,
+    'CLOSE': 2,
+    'NUM_1': 1,
+    'NUM_2': 3,
+    'NUM_3': 3,
+    'NUM_4': 2,
+    'NUM_5': 1,
+    'NUM_6': 1,
+    'NUM_7': 1,
+    'DIR_FORWARD': 6,
+    'DIR_BACKWARD': 6,
+    'DIR_LEFT': 6,
+    'DIR_RIGHT': 6,
+    'SENSOR_FRONT': 1,
+    'SENSOR_FLOOR': 1,
+    'SENSOR_LIGHT': 1,
+    'NUM_RANDOM': 2,
+    'DIAL': 2,
+  };
 
   Map<String, int> _inventoryCounts = {
     'START': 1,
@@ -921,6 +573,14 @@ class BlocksViewState extends State<BlocksView> {
         }
       }
     }
+    if (block.parentActionBlock != null) {
+      if (block.type.isDialBlock) {
+        block.parentActionBlock!.attachedDialBlock = null;
+      } else {
+        block.parentActionBlock!.attachedNumberBlock = null;
+      }
+      block.parentActionBlock = null;
+    }
   }
 
   int _findMatchingClose(List<PlacedBlock> seq, int start, int end) {
@@ -1103,14 +763,13 @@ class BlocksViewState extends State<BlocksView> {
 
   Future<void> _playSequenceFrom(PlacedBlock playBlock) async {
     if (_isPlaying) return;
+
     PlacedBlock current = playBlock;
     List<PlacedBlock> sequence = [current];
 
     while (true) {
       PlacedBlock? prev = _workspaceBlocks.where((b) {
-        if (b.type.isNumberBlock ||
-            b.type.isSensorBlock ||
-            b.type.isDirectionBlock) {
+        if (b.type.isParamBlock) {
           return false;
         }
         double expectedX =
@@ -1126,16 +785,30 @@ class BlocksViewState extends State<BlocksView> {
     }
 
     bool hasStart = sequence.any((b) => b.type.id == 'START');
+
     if (!hasStart) {
       if (sequence.isNotEmpty && sequence.first.type.id == 'FUNCTION') {
         _savedFunctionBlocks = sequence.sublist(1).map((b) {
           var newB = PlacedBlock(b.type, b.position);
+
           if (b.attachedNumberBlock != null) {
             newB.attachedNumberBlock = PlacedBlock(
               b.attachedNumberBlock!.type,
               b.attachedNumberBlock!.position,
             );
+            newB.attachedNumberBlock!.parentActionBlock = newB;
           }
+
+          if (b.attachedDialBlock != null) {
+            newB.attachedDialBlock = PlacedBlock(
+              b.attachedDialBlock!.type,
+              b.attachedDialBlock!.position,
+            );
+            newB.attachedDialBlock!.dialInput = b.attachedDialBlock!.dialInput;
+            newB.attachedDialBlock!.isDecimal = b.attachedDialBlock!.isDecimal;
+            newB.attachedDialBlock!.parentActionBlock = newB;
+          }
+
           return newB;
         }).toList();
       }
@@ -1151,6 +824,7 @@ class BlocksViewState extends State<BlocksView> {
 
     setState(() => _isPlaying = true);
     await _executeAst(sequence, 0, sequence.length);
+
     setState(() {
       _isPlaying = false;
       _executingStep = null;
@@ -1246,269 +920,301 @@ class BlocksViewState extends State<BlocksView> {
   @override
   Widget build(BuildContext context) {
     return Positioned.fill(
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: RepaintBoundary(
-              child: DragTarget<BlockType>(
-                onAcceptWithDetails: (details) {
-                  final RenderBox renderBox =
-                      context.findRenderObject() as RenderBox;
-                  setState(() {
-                    final type = details.data;
-                    if ((_inventoryCounts[type.id] ?? 0) > 0) {
-                      _inventoryCounts[type.id] =
-                          _inventoryCounts[type.id]! - 1;
-                      final newBlock = PlacedBlock(
-                        type,
-                        renderBox.globalToLocal(details.offset),
-                      );
-                      _workspaceBlocks.add(newBlock);
-                      _snapBlock(newBlock);
-                    }
-                  });
-                },
-                builder: (context, candidateData, rejectedData) {
-                  return GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: () {
-                      FocusManager.instance.primaryFocus?.unfocus();
-                    },
-                    child: Stack(
-                      children: [
-                        ...List.generate(_workspaceBlocks.length, (index) {
-                          final block = _workspaceBlocks[index];
-                          bool isExecuting = false;
-                          if (_executingStep != null) {
-                            if (block.type.isParamBlock) {
-                              if (block.parentActionBlock != null &&
-                                  _workspaceBlocks.indexOf(
-                                        block.parentActionBlock!,
-                                      ) ==
-                                      _executingStep) {
-                                isExecuting = true;
+      child: Listener(
+        onPointerDown: (event) {
+          if (event.buttons == 4 ||
+              event.kind == PointerDeviceKind.mouse && event.buttons == 2) {
+            setState(() {
+              _panStartFocalPoint = event.position;
+              _panStartCameraOffset = _cameraOffset;
+            });
+          }
+        },
+        onPointerMove: (event) {
+          if (_panStartFocalPoint != null && _panStartCameraOffset != null) {
+            setState(() {
+              Offset delta = event.position - _panStartFocalPoint!;
+              _cameraOffset = _panStartCameraOffset! + delta;
+            });
+          }
+        },
+        onPointerUp: (event) {
+          setState(() {
+            _panStartFocalPoint = null;
+            _panStartCameraOffset = null;
+          });
+        },
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: RepaintBoundary(
+                child: DragTarget<BlockType>(
+                  onAcceptWithDetails: (details) {
+                    final RenderBox renderBox =
+                        context.findRenderObject() as RenderBox;
+                    setState(() {
+                      final type = details.data;
+                      if ((_inventoryCounts[type.id] ?? 0) > 0) {
+                        _inventoryCounts[type.id] =
+                            _inventoryCounts[type.id]! - 1;
+                        final localPos = renderBox.globalToLocal(
+                          details.offset,
+                        );
+                        final newBlock = PlacedBlock(
+                          type,
+                          localPos - _cameraOffset,
+                        );
+                        _workspaceBlocks.add(newBlock);
+                        _snapBlock(newBlock);
+                      }
+                    });
+                  },
+                  builder: (context, candidateData, rejectedData) {
+                    return GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () {
+                        FocusManager.instance.primaryFocus?.unfocus();
+                      },
+                      child: Stack(
+                        children: [
+                          ...List.generate(_workspaceBlocks.length, (index) {
+                            final block = _workspaceBlocks[index];
+                            bool isExecuting = false;
+                            if (_executingStep != null) {
+                              if (block.type.isParamBlock) {
+                                if (block.parentActionBlock != null &&
+                                    _workspaceBlocks.indexOf(
+                                          block.parentActionBlock!,
+                                        ) ==
+                                        _executingStep) {
+                                  isExecuting = true;
+                                }
+                              } else {
+                                isExecuting = _executingStep == index;
                               }
-                            } else {
-                              isExecuting = _executingStep == index;
                             }
-                          }
 
-                          final isBeingDragged = _primaryDraggedBlock == block;
-                          final isHidden =
-                              _activeDraggingGroup.any(
-                                (item) => item.block == block,
-                              ) &&
-                              !isBeingDragged;
+                            final isBeingDragged =
+                                _primaryDraggedBlock == block;
+                            final isHidden =
+                                _activeDraggingGroup.any(
+                                  (item) => item.block == block,
+                                ) &&
+                                !isBeingDragged;
 
-                          return Positioned(
-                            left: block.position.dx,
-                            top: block.position.dy,
-                            child: Opacity(
-                              opacity: isHidden ? 0.0 : 1.0,
-                              child: IgnorePointer(
-                                ignoring: isHidden,
-                                child: Draggable<PlacedBlock>(
-                                  data: block,
-                                  maxSimultaneousDrags: _editingBlock == block
-                                      ? 0
-                                      : 1,
-                                  feedback: _buildDraggingFeedback(block),
-                                  childWhenDragging: const SizedBox.shrink(),
-                                  onDragStarted: () {
-                                    setState(() {
-                                      _primaryDraggedBlock = block;
-                                      if (block.type.isParamBlock) {
-                                        if (block.parentActionBlock != null) {
-                                          if (block.type.isDialBlock) {
-                                            block
-                                                    .parentActionBlock!
-                                                    .attachedDialBlock =
-                                                null;
-                                          } else {
-                                            block
-                                                    .parentActionBlock!
-                                                    .attachedNumberBlock =
-                                                null;
+                            return Positioned(
+                              left: block.position.dx + _cameraOffset.dx,
+                              top: block.position.dy + _cameraOffset.dy,
+                              child: Opacity(
+                                opacity: isHidden ? 0.0 : 1.0,
+                                child: IgnorePointer(
+                                  ignoring: isHidden,
+                                  child: Draggable<PlacedBlock>(
+                                    data: block,
+                                    maxSimultaneousDrags: _editingBlock == block
+                                        ? 0
+                                        : 1,
+                                    feedback: _buildDraggingFeedback(block),
+                                    childWhenDragging: const SizedBox.shrink(),
+                                    onDragStarted: () {
+                                      setState(() {
+                                        _primaryDraggedBlock = block;
+                                        bool hasStart =
+                                            block.type.id == 'START';
+                                        bool hasPlay = block.type.id == 'PLAY';
+                                        if (!block.type.isParamBlock) {
+                                          List<PlacedBlock> descendants =
+                                              _getDescendants(block);
+                                          if (descendants.any(
+                                            (b) => b.type.id == 'START',
+                                          )) {
+                                            hasStart = true;
                                           }
-                                          block.parentActionBlock = null;
-                                        }
-                                        _activeDraggingGroup = [
-                                          DraggingGroupItem(block, Offset.zero),
-                                        ];
-                                      } else {
-                                        _activeDraggingGroup = [
-                                          DraggingGroupItem(block, Offset.zero),
-                                        ];
-                                        List<PlacedBlock> descendants =
-                                            _getDescendants(block);
-                                        List<PlacedBlock> fullActionList = [
-                                          block,
-                                          ...descendants,
-                                        ];
-                                        for (var b in fullActionList) {
-                                          if (b != block) {
-                                            _activeDraggingGroup.add(
-                                              DraggingGroupItem(
-                                                b,
-                                                b.position - block.position,
-                                              ),
-                                            );
-                                          }
-                                          if (b.attachedNumberBlock != null) {
-                                            _activeDraggingGroup.add(
-                                              DraggingGroupItem(
-                                                b.attachedNumberBlock!,
-                                                b
-                                                        .attachedNumberBlock!
-                                                        .position -
-                                                    block.position,
-                                              ),
-                                            );
-                                          }
-                                          if (b.attachedDialBlock != null) {
-                                            _activeDraggingGroup.add(
-                                              DraggingGroupItem(
-                                                b.attachedDialBlock!,
-                                                b.attachedDialBlock!.position -
-                                                    block.position,
-                                              ),
-                                            );
+                                          if (descendants.any(
+                                            (b) => b.type.id == 'PLAY',
+                                          )) {
+                                            hasPlay = true;
                                           }
                                         }
-                                      }
-                                    });
-                                  },
-                                  onDragEnd: (details) {
-                                    final RenderBox renderBox =
-                                        context.findRenderObject() as RenderBox;
-                                    setState(() {
-                                      final newPos = renderBox.globalToLocal(
-                                        details.offset,
-                                      );
-                                      block.position = newPos;
-                                      for (var item in _activeDraggingGroup) {
-                                        if (item.block != block) {
-                                          item.block.position =
-                                              newPos + item.relativeOffset;
-                                        }
-                                      }
-                                      Offset posBeforeSnap = block.position;
-                                      _snapBlock(block);
-                                      Offset snapDelta =
-                                          block.position - posBeforeSnap;
-                                      for (var item in _activeDraggingGroup) {
-                                        if (item.block != block) {
-                                          item.block.position += snapDelta;
-                                        }
-                                      }
-                                      _primaryDraggedBlock = null;
-                                      _activeDraggingGroup.clear();
-                                    });
-                                  },
-                                  child: _buildBlockItem(
-                                    block.type,
-                                    isExecuting,
-                                    block,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          );
-                        }),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
-          AnimatedPositioned(
-            duration: Duration(milliseconds: 700),
-            right: widget.play ? 20 : -200,
-            top: 40,
-            bottom: 40,
-            width: 180,
-            child: DragTarget<PlacedBlock>(
-              onAcceptWithDetails: (details) {
-                setState(() {
-                  final block = details.data;
-                  if (block.parentActionBlock != null) {
-                    block.parentActionBlock!.attachedNumberBlock = null;
-                  }
-                  for (var other in _workspaceBlocks) {
-                    if (other.attachedNumberBlock == block) {
-                      other.attachedNumberBlock = null;
-                    }
-                  }
-                  _workspaceBlocks.remove(block);
-                  _inventoryCounts[block.type.id] =
-                      (_inventoryCounts[block.type.id] ?? 0) + 1;
+                                        _isDraggingStartGroup =
+                                            hasStart && hasPlay;
 
-                  for (var item in _activeDraggingGroup) {
-                    if (item.block != block) {
-                      _workspaceBlocks.remove(item.block);
-                      _inventoryCounts[item.block.type.id] =
-                          (_inventoryCounts[item.block.type.id] ?? 0) + 1;
-                    }
-                  }
-                  _activeDraggingGroup.clear();
-                  _primaryDraggedBlock = null;
-                });
-              },
-              builder: (context, candidateData, rejectedData) {
-                return Container(
-                  decoration: BoxDecoration(
-                    color: candidateData.isNotEmpty
-                        ? Colors.red.withValues(alpha: 0.1)
-                        : Colors.white.withValues(alpha: 0.85),
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.08),
-                        blurRadius: 10,
-                        offset: const Offset(2, 4),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: ListView(
-                          padding: const EdgeInsets.all(10),
-                          children: [
-                            ..._actionTypes.map((block) {
-                              final count = _inventoryCounts[block.id] ?? 0;
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 10),
-                                child: Opacity(
-                                  opacity: count > 0 ? 1.0 : 0.0,
-                                  child: IgnorePointer(
-                                    ignoring: count <= 0,
-                                    child: Draggable<BlockType>(
-                                      data: block,
-                                      feedback: Material(
-                                        color: Colors.transparent,
-                                        child: _buildBlockItem(block, false),
-                                      ),
-                                      child: _buildBlockItem(block, false),
+                                        if (block.type.isParamBlock) {
+                                          if (block.parentActionBlock != null) {
+                                            if (block.type.isDialBlock) {
+                                              block
+                                                      .parentActionBlock!
+                                                      .attachedDialBlock =
+                                                  null;
+                                            } else {
+                                              block
+                                                      .parentActionBlock!
+                                                      .attachedNumberBlock =
+                                                  null;
+                                            }
+                                            block.parentActionBlock = null;
+                                          }
+                                          _activeDraggingGroup = [
+                                            DraggingGroupItem(
+                                              block,
+                                              Offset.zero,
+                                            ),
+                                          ];
+                                        } else {
+                                          _activeDraggingGroup = [
+                                            DraggingGroupItem(
+                                              block,
+                                              Offset.zero,
+                                            ),
+                                          ];
+                                          List<PlacedBlock> descendants =
+                                              _getDescendants(block);
+                                          List<PlacedBlock> fullActionList = [
+                                            block,
+                                            ...descendants,
+                                          ];
+                                          for (var b in fullActionList) {
+                                            if (b != block) {
+                                              _activeDraggingGroup.add(
+                                                DraggingGroupItem(
+                                                  b,
+                                                  b.position - block.position,
+                                                ),
+                                              );
+                                            }
+                                            if (b.attachedNumberBlock != null) {
+                                              _activeDraggingGroup.add(
+                                                DraggingGroupItem(
+                                                  b.attachedNumberBlock!,
+                                                  b
+                                                          .attachedNumberBlock!
+                                                          .position -
+                                                      block.position,
+                                                ),
+                                              );
+                                            }
+                                            if (b.attachedDialBlock != null) {
+                                              _activeDraggingGroup.add(
+                                                DraggingGroupItem(
+                                                  b.attachedDialBlock!,
+                                                  b
+                                                          .attachedDialBlock!
+                                                          .position -
+                                                      block.position,
+                                                ),
+                                              );
+                                            }
+                                          }
+                                        }
+                                      });
+                                    },
+                                    onDragEnd: (details) {
+                                      final RenderBox renderBox =
+                                          context.findRenderObject()
+                                              as RenderBox;
+                                      setState(() {
+                                        final newPos =
+                                            renderBox.globalToLocal(
+                                              details.offset,
+                                            ) -
+                                            _cameraOffset;
+                                        block.position = newPos;
+                                        for (var item in _activeDraggingGroup) {
+                                          if (item.block != block) {
+                                            item.block.position =
+                                                newPos + item.relativeOffset;
+                                          }
+                                        }
+                                        Offset posBeforeSnap = block.position;
+                                        _snapBlock(block);
+                                        Offset snapDelta =
+                                            block.position - posBeforeSnap;
+                                        for (var item in _activeDraggingGroup) {
+                                          if (item.block != block) {
+                                            item.block.position += snapDelta;
+                                          }
+                                        }
+                                        _primaryDraggedBlock = null;
+                                        _activeDraggingGroup.clear();
+                                        _isDraggingStartGroup = false;
+                                      });
+                                    },
+                                    child: _buildBlockItem(
+                                      block.type,
+                                      isExecuting,
+                                      block,
                                     ),
                                   ),
                                 ),
-                              );
-                            }),
-                            const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 8.0),
-                              child: Divider(height: 1),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(left: 5),
-                              child: Wrap(
-                                spacing: 7,
-                                runSpacing: 3,
-                                alignment: WrapAlignment.start,
-                                children: _parameterTypes.map((block) {
-                                  final count = _inventoryCounts[block.id] ?? 0;
-                                  return Opacity(
+                              ),
+                            );
+                          }),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+            AnimatedPositioned(
+              duration: Duration(milliseconds: 700),
+              right: widget.play ? 20 : -200,
+              top: 40,
+              bottom: 40,
+              width: 180,
+              child: DragTarget<PlacedBlock>(
+                onAcceptWithDetails: (details) {
+                  setState(() {
+                    final block = details.data;
+                    if (block.parentActionBlock != null) {
+                      block.parentActionBlock!.attachedNumberBlock = null;
+                    }
+                    for (var other in _workspaceBlocks) {
+                      if (other.attachedNumberBlock == block) {
+                        other.attachedNumberBlock = null;
+                      }
+                    }
+                    _workspaceBlocks.remove(block);
+                    _inventoryCounts[block.type.id] =
+                        (_inventoryCounts[block.type.id] ?? 0) + 1;
+
+                    for (var item in _activeDraggingGroup) {
+                      if (item.block != block) {
+                        _workspaceBlocks.remove(item.block);
+                        _inventoryCounts[item.block.type.id] =
+                            (_inventoryCounts[item.block.type.id] ?? 0) + 1;
+                      }
+                    }
+                    _activeDraggingGroup.clear();
+                    _primaryDraggedBlock = null;
+                  });
+                },
+                builder: (context, candidateData, rejectedData) {
+                  return Container(
+                    decoration: BoxDecoration(
+                      color: candidateData.isNotEmpty
+                          ? Colors.red.withValues(alpha: 0.1)
+                          : Colors.white.withValues(alpha: 0.85),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.08),
+                          blurRadius: 10,
+                          offset: const Offset(2, 4),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: ListView(
+                            padding: const EdgeInsets.all(10),
+                            children: [
+                              ..._actionTypes.map((block) {
+                                final count = _inventoryCounts[block.id] ?? 0;
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 10),
+                                  child: Opacity(
                                     opacity: count > 0 ? 1.0 : 0.0,
                                     child: IgnorePointer(
                                       ignoring: count <= 0,
@@ -1521,97 +1227,132 @@ class BlocksViewState extends State<BlocksView> {
                                         child: _buildBlockItem(block, false),
                                       ),
                                     ),
-                                  );
-                                }).toList(),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const Divider(height: 1),
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 8.0, top: 4.0),
-                        child: Column(
-                          children: [
-                            TextButton.icon(
-                              onPressed: () {
-                                showGeneralDialog(
-                                  context: context,
-                                  barrierDismissible: true,
-                                  barrierLabel: "Presets",
-                                  pageBuilder: (context, _, __) => Align(
-                                    alignment: Alignment.bottomCenter,
-                                    child: Material(
-                                      color: Colors.transparent,
-                                      child: Container(
-                                        width:
-                                            MediaQuery.of(context).size.width *
-                                            0.7,
-                                        height:
-                                            MediaQuery.of(context).size.height *
-                                            0.4,
-                                        padding: EdgeInsets.symmetric(
-                                          vertical: 10,
-                                          horizontal: 10,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius: BorderRadius.only(
-                                            topLeft: Radius.circular(20.0),
-                                            topRight: Radius.circular(20.0),
-                                          ),
-                                        ),
-                                        child: ListView(
-                                          children: _presetGroups
-                                              .map(
-                                                (g) => ExpansionTile(
-                                                  title: Text(g.groupName),
-                                                  children: g.presets
-                                                      .map(
-                                                        (p) => ListTile(
-                                                          title: Text(p.name),
-                                                          onTap: () {
-                                                            _applyPreset(p);
-                                                            Navigator.pop(
-                                                              context,
-                                                            );
-                                                          },
-                                                        ),
-                                                      )
-                                                      .toList(),
-                                                ),
-                                              )
-                                              .toList(),
-                                        ),
-                                      ),
-                                    ),
                                   ),
                                 );
-                              },
-                              icon: const Icon(
-                                Icons.folder_open,
-                                color: Colors.blueGrey,
+                              }),
+                              const Padding(
+                                padding: EdgeInsets.symmetric(vertical: 8.0),
+                                child: Divider(height: 1),
                               ),
-                              label: const Text('프리셋 열기'),
-                            ),
-                            TextButton.icon(
-                              onPressed: widget.onOpenTerminal,
-                              icon: const Icon(
-                                Icons.terminal,
-                                color: Colors.blueGrey,
+                              Padding(
+                                padding: const EdgeInsets.only(left: 5),
+                                child: Wrap(
+                                  spacing: 7,
+                                  runSpacing: 3,
+                                  alignment: WrapAlignment.start,
+                                  children: _parameterTypes.map((block) {
+                                    final count =
+                                        _inventoryCounts[block.id] ?? 0;
+                                    return Opacity(
+                                      opacity: count > 0 ? 1.0 : 0.0,
+                                      child: IgnorePointer(
+                                        ignoring: count <= 0,
+                                        child: Draggable<BlockType>(
+                                          data: block,
+                                          feedback: Material(
+                                            color: Colors.transparent,
+                                            child: _buildBlockItem(
+                                              block,
+                                              false,
+                                            ),
+                                          ),
+                                          child: _buildBlockItem(block, false),
+                                        ),
+                                      ),
+                                    );
+                                  }).toList(),
+                                ),
                               ),
-                              label: const Text('터미널 열기'),
-                            ),
-                          ],
+                            ],
+                          ),
+                        ),
+                        const Divider(height: 1),
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            bottom: 8.0,
+                            top: 4.0,
+                            right: 10,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              PresetWidget(
+                                key: _presetKey,
+                                workspaceBlocks: _workspaceBlocks,
+                                savedFunctionBlocks: _savedFunctionBlocks,
+                                inventoryCounts: _maxInventory,
+                                actionTypes: _actionTypes,
+                                parameterTypes: _parameterTypes,
+                                onApplyPreset:
+                                    (
+                                      newInventory,
+                                      newWorkspace,
+                                      newFunctionBlocks,
+                                    ) {
+                                      setState(() {
+                                        _inventoryCounts = newInventory;
+                                        _workspaceBlocks.clear();
+                                        _workspaceBlocks.addAll(newWorkspace);
+                                        _savedFunctionBlocks =
+                                            newFunctionBlocks;
+                                      });
+                                    },
+                              ),
+                              IconButton(
+                                onPressed: widget.onOpenTerminal,
+                                icon: Icon(Icons.terminal),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+            if (_isDraggingStartGroup)
+              Positioned(
+                left: 10,
+                bottom: 10,
+                child: DragTarget<PlacedBlock>(
+                  onAcceptWithDetails: (details) {
+                    setState(() {
+                      _isDraggingStartGroup = false;
+                    });
+                    _presetKey.currentState?.showSavePresetDialog(details.data);
+                  },
+                  builder: (context, candidateData, rejectedData) {
+                    return Container(
+                      width: 70,
+                      height: 70,
+                      decoration: BoxDecoration(
+                        color: candidateData.isNotEmpty
+                            ? Colors.white.withValues(alpha: 0.9)
+                            : Colors.white.withValues(alpha: 0.4),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.brown, width: 2),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.15),
+                            blurRadius: 10,
+                            offset: const Offset(2, 4),
+                          ),
+                        ],
+                      ),
+                      child: const Center(
+                        child: Icon(
+                          Icons.format_list_bulleted_add,
+                          size: 40,
+                          color: Colors.brown,
                         ),
                       ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
+                    );
+                  },
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
