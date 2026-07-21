@@ -313,10 +313,9 @@ class BlocksViewState extends State<BlocksView> {
           name: "2스테이지, 스텝 3",
           blocks: [
             {'id': 'START'},
+            {'id': 'REPEAT', 'param': 'NUM_3'},
             {'id': 'MOVE', 'param': 'NUM_5'},
-            {'id': 'REPEAT', 'param': 'NUM_2'},
             {'id': 'MOVE', 'param': 'DIR_RIGHT'},
-            {'id': 'MOVE', 'param': 'NUM_4'},
             {'id': 'CLOSE'},
             {'id': 'PLAY'},
           ],
